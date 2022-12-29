@@ -57,3 +57,23 @@ class XMLConversionTestCase(TestCase):
                     },
                 ],
             })
+
+    def test_connected_convert_badly_formatted_document(self):
+        with (TEST_DIR / Path('wrong.xml')).open() as fp:
+            response = self.client.post('/connected/', {
+                'file': fp,
+            })
+            self.assertEqual(response.status_code, 400)
+            self.assertEqual(response.json(), {
+                "file": "bad format file",
+            })
+
+    def test_api_convert_badly_formatted_document(self):
+        with (TEST_DIR / Path('wrong.xml')).open() as fp:
+            response = self.client.post('/api/converter/convert/', {
+                'file': fp,
+            })
+            self.assertEqual(response.status_code, 400)
+            self.assertEqual(response.json(), {
+                "file": "bad format file",
+            })
