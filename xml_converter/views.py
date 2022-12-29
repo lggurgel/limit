@@ -40,14 +40,8 @@ class CreateXmlToJsonConversionAPI(CreateAPIView):
     serializer_class = CreateXmlToJsonConversionSerializer
 
     def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data)
+        serializer = self.serializer_class(None, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
 
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
-
-        try:
-            xml_data = convert_to_dict(serializer.validated_data["file"])
-        except BadFormatFileException as err:
-            return Response({"file": str(err)}, status=HTTP_400_BAD_REQUEST)
-        
-        return Response(xml_data, status=HTTP_200_OK)
+        return Response(serializer.data["converted_data"], status=HTTP_200_OK)

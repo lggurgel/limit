@@ -9,10 +9,12 @@ TEST_DIR = Path(__file__).parent / Path('test_files')
 class XMLConversionTestCase(TestCase):
     def setUp(self):
         self.client = Client()
+        self.CONVERTER_API_ENDPOINT = "/api/converter/convert/"
+        self.CONVERTER_URL = "/connected/"
 
     def test_connected_convert_empty_document(self):
         with (TEST_DIR / Path('empty.xml')).open() as fp:
-            response = self.client.post('/connected/', {
+            response = self.client.post(self.CONVERTER_URL, {
                 'file': fp,
             })
             self.assertEqual(response.status_code, 200)
@@ -22,7 +24,7 @@ class XMLConversionTestCase(TestCase):
 
     def test_api_convert_empty_document(self):
         with (TEST_DIR / Path('empty.xml')).open() as fp:
-            response = self.client.post('/api/converter/convert/', {
+            response = self.client.post(self.CONVERTER_API_ENDPOINT, {
                 'file': fp,
             })
             self.assertEqual(response.status_code, 200)
@@ -32,7 +34,35 @@ class XMLConversionTestCase(TestCase):
 
     def test_connected_convert_addresses(self):
         with (TEST_DIR / Path('addresses.xml')).open() as fp:
-            response = self.client.post('/connected/', {
+            response = self.client.post(self.CONVERTER_URL, {
+                'file': fp,
+            })
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), {
+                "Root": [
+                    {
+                        "Address": [
+                            {"StreetLine1": "123 Main St."},
+                            {"StreetLine2": "Suite 400"},
+                            {"City": "San Francisco"},
+                            {"State": "CA"},
+                            {"PostCode": "94103"},
+                        ]
+                    },
+                    {
+                        "Address": [
+                            {"StreetLine1": "400 Market St."},
+                            {"City": "San Francisco"},
+                            {"State": "CA"},
+                            {"PostCode": "94108"},
+                        ]
+                    },
+                ],
+            })
+
+    def test_api_convert_addresses(self):
+        with (TEST_DIR / Path('addresses.xml')).open() as fp:
+            response = self.client.post(self.CONVERTER_API_ENDPOINT, {
                 'file': fp,
             })
             self.assertEqual(response.status_code, 200)
@@ -60,7 +90,7 @@ class XMLConversionTestCase(TestCase):
 
     def test_connected_convert_badly_formatted_document(self):
         with (TEST_DIR / Path('wrong.xml')).open() as fp:
-            response = self.client.post('/connected/', {
+            response = self.client.post(self.CONVERTER_URL, {
                 'file': fp,
             })
             self.assertEqual(response.status_code, 400)
@@ -70,10 +100,10 @@ class XMLConversionTestCase(TestCase):
 
     def test_api_convert_badly_formatted_document(self):
         with (TEST_DIR / Path('wrong.xml')).open() as fp:
-            response = self.client.post('/api/converter/convert/', {
+            response = self.client.post(self.CONVERTER_API_ENDPOINT, {
                 'file': fp,
             })
             self.assertEqual(response.status_code, 400)
-            self.assertEqual(response.json(), {
-                "file": "bad format file",
-            })
+            self.assertEqual(response.json(),
+                ['bad format file'],
+            )

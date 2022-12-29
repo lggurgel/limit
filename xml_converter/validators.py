@@ -1,6 +1,6 @@
 import os
 
-from django.core.exceptions import ValidationError
+from xml_converter.exceptions import FileExtensionValidationError
 
 
 def validate_file_extension(value):
@@ -8,4 +8,4 @@ def validate_file_extension(value):
     valid_extensions = [".xml"]
     
     if not ext.lower() in valid_extensions:
-        raise ValidationError("Unsupported file extension.")
+        raise FileExtensionValidationError("Unsupported file extension.")
